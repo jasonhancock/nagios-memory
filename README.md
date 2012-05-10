@@ -2,7 +2,6 @@ nagios-memory
 =============
 
 A nagios plugin and supporting pnp4nagios templates to monitor/graph memory usage.
-types of cpu utilization.
 
 ![check_mem](https://github.com/jasonhancock/nagios-memory/raw/master/example-images/check_mem.png)
 

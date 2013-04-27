@@ -30,7 +30,7 @@ use Nagios::Plugin;
 use Nagios::Plugin::Threshold;
 
 my $np = Nagios::Plugin->new(
-    usage     => "Usage: %s [-H|--host=<host> ] [ -p|--port=<port> ]",
+    usage     => "Usage: %s [-w|--warning=<percent> ] [ -c|--critical=<percent> ]",
     shortname => 'MEMORY',
 );
 

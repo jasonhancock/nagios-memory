@@ -95,10 +95,14 @@ my $code = $np->check_threshold(
 
 $np->nagios_exit(
     return_code => $code,
-    message     => sprintf('used: %d kB cached: %d kB buffers: %d kB free: %d kB',
+    message     => sprintf(
+	($np->opts->verbose ?
+		'%d%% used (used: %d kB cached: %d kB buffers: %d kB free: %d kB)' :
+		'%d%% used'),
+        ($data{'MemUsed'} / $data{'MemTotal'}) * 100,
         $data{'MemUsed'},
         $data{'Cached'},
         $data{'Buffers'},
         $data{'MemFree'},
-    ),
+    )
 );

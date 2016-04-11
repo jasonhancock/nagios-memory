@@ -58,39 +58,65 @@ while(my $line=<IN>) {
 }
 close IN;
 
-# Calculate mem used
-$data{'MemUsed'} = $data{'MemTotal'} - $data{'MemFree'} - $data{'Cached'} - $data{'Buffers'};
+# Memory available for applications:
+# the sum of the memory not used,
+# the temporary storage for raw disk blocks (could be freed for programs by the kernel),
+# in-memory cache for files read from the disk (the pagecache can also be tuned by the kernel if needed).
+$data{'MemAvailable'} = $data{'MemFree'} + $data{'Cached'} + $data{'Buffers'};
+# Memory used: the memory currently used by the applications, not considering the the raw buffers and the pagecache
+$data{'MemUsed'} = $data{'MemTotal'} - $data{'MemAvailable'};
+
+# Define thresholds
+my %thresholds;
+$thresholds{'Warning'} = $np->opts->warning  * .01 * $data{'MemTotal'};
+$thresholds{'Critical'} = $np->opts->critical * .01 * $data{'MemTotal'};
 
 $np->add_perfdata(
-    label => 'used',
-    value => $data{'MemUsed'} * 1024,
-    uom   => undef,
+    label    => 'used',
+    value    => $data{'MemUsed'} * 1024,
+    uom      => 'B',
+    warning  => $thresholds{'Warning'} * 1024,
+    critical => $thresholds{'Critical'} * 1024,
+    min      => 0,
+    max      => $data{'MemTotal'} * 1024,
 );
 
 $np->add_perfdata(
-    label => 'cached',
-    value => $data{'Cached'} * 1024,
-    uom   => undef,
+    label    => 'cached',
+    value    => $data{'Cached'} * 1024,
+    uom       => 'B',
+    warning  => undef,
+    critical => undef,
+    min      => 0,
+    max      => $data{'MemTotal'} * 1024,
 );
 
 $np->add_perfdata(
-    label => 'buffers',
-    value => $data{'Buffers'} * 1024,
-    uom   => undef,
+    label    => 'buffers',
+    value    => $data{'Buffers'} * 1024,
+    uom      => 'B',
+    warning  => undef,
+    critical => undef,
+    min      => 0,
+    max      => $data{'MemTotal'} * 1024,
 );
 
 $np->add_perfdata(
-    label => 'free',
-    value => $data{'MemFree'} * 1024,
-    uom   => undef,
+    label    => 'free',
+    value    => $data{'MemFree'} * 1024,
+    uom      => 'B',
+    warning  => undef,
+    critical => undef,
+    min      => 0,
+    max      => $data{'MemTotal'} * 1024,
 );
 
 # check the result against the defined warning and critical thresholds,
 # output the result and exit
 my $code = $np->check_threshold(
     check    => $data{'MemUsed'} * 1024,
-    warning  => $np->opts->warning  * .01 * $data{'MemTotal'} * 1024,
-    critical => $np->opts->critical * .01 * $data{'MemTotal'} * 1024,
+    warning  => $thresholds{'Warning'} * 1024,
+    critical => $thresholds{'Critical'} * 1024,
 );
 
 $np->nagios_exit(

@@ -119,16 +119,21 @@ my $code = $np->check_threshold(
     critical => $thresholds{'Critical'} * 1024,
 );
 
-$np->nagios_exit(
-    return_code => $code,
-    message     => sprintf(
-	($np->opts->verbose ?
-		'%d%% used (used: %d kB cached: %d kB buffers: %d kB free: %d kB)' :
-		'%d%% used'),
-        ($data{'MemUsed'} / $data{'MemTotal'}) * 100,
-        $data{'MemUsed'},
-        $data{'Cached'},
-        $data{'Buffers'},
-        $data{'MemFree'},
+if ($np->opts->verbose) {
+    $np->nagios_exit(
+        return_code => $code,
+        message     => sprintf(
+            '%d%% used (used: %d kB cached: %d kB buffers: %d kB free: %d kB)',
+            ($data{'MemUsed'} / $data{'MemTotal'}) * 100,
+            $data{'MemUsed'},
+            $data{'Cached'},
+            $data{'Buffers'},
+            $data{'MemFree'},
+        )
+    );
+} else {
+    $np->nagios_exit(
+        return_code => $code,
+        message     => sprintf('%d%% used', ($data{'MemUsed'} / $data{'MemTotal'}) * 100),
     )
-);
+}

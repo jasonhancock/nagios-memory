@@ -62,7 +62,10 @@ close IN;
 # the sum of the memory not used,
 # the temporary storage for raw disk blocks (could be freed for programs by the kernel),
 # in-memory cache for files read from the disk (the pagecache can also be tuned by the kernel if needed).
-$data{'MemAvailable'} = $data{'MemFree'} + $data{'Cached'} + $data{'Buffers'};
+# IN EL7 they added a variable MemAvailable
+if (! exists $data{'MemAvailable'}){
+  $data{'MemAvailable'} = $data{'MemFree'} + $data{'Cached'} + $data{'Buffers'};
+}
 # Memory used: the memory currently used by the applications, not considering the the raw buffers and the pagecache
 $data{'MemUsed'} = $data{'MemTotal'} - $data{'MemAvailable'};
 
@@ -77,6 +80,16 @@ $np->add_perfdata(
     uom      => 'B',
     warning  => $thresholds{'Warning'} * 1024,
     critical => $thresholds{'Critical'} * 1024,
+    min      => 0,
+    max      => $data{'MemTotal'} * 1024,
+);
+
+$np->add_perfdata(
+    label    => 'available',
+    value    => $data{'MemAvailable'} * 1024,
+    uom       => 'B',
+    warning  => undef,
+    critical => undef,
     min      => 0,
     max      => $data{'MemTotal'} * 1024,
 );

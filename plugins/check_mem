@@ -63,7 +63,7 @@ close IN;
 # the temporary storage for raw disk blocks (could be freed for programs by the kernel),
 # in-memory cache for files read from the disk (the pagecache can also be tuned by the kernel if needed).
 # IN EL7 they added a variable MemAvailable
-if (! exists $data{'MemAvailable'}){
+if (!exists($data{'MemAvailable'})) {
   $data{'MemAvailable'} = $data{'MemFree'} + $data{'Cached'} + $data{'Buffers'};
 }
 # Memory used: the memory currently used by the applications, not considering the the raw buffers and the pagecache
@@ -94,36 +94,6 @@ $np->add_perfdata(
     max      => $data{'MemTotal'} * 1024,
 );
 
-$np->add_perfdata(
-    label    => 'cached',
-    value    => $data{'Cached'} * 1024,
-    uom       => 'B',
-    warning  => undef,
-    critical => undef,
-    min      => 0,
-    max      => $data{'MemTotal'} * 1024,
-);
-
-$np->add_perfdata(
-    label    => 'buffers',
-    value    => $data{'Buffers'} * 1024,
-    uom      => 'B',
-    warning  => undef,
-    critical => undef,
-    min      => 0,
-    max      => $data{'MemTotal'} * 1024,
-);
-
-$np->add_perfdata(
-    label    => 'free',
-    value    => $data{'MemFree'} * 1024,
-    uom      => 'B',
-    warning  => undef,
-    critical => undef,
-    min      => 0,
-    max      => $data{'MemTotal'} * 1024,
-);
-
 # check the result against the defined warning and critical thresholds,
 # output the result and exit
 my $code = $np->check_threshold(
@@ -136,12 +106,10 @@ if ($np->opts->verbose) {
     $np->nagios_exit(
         return_code => $code,
         message     => sprintf(
-            '%d%% used (used: %d kB cached: %d kB buffers: %d kB free: %d kB)',
+            '%d%% used (used: %d kB available %d: kB)',
             ($data{'MemUsed'} / $data{'MemTotal'}) * 100,
             $data{'MemUsed'},
-            $data{'Cached'},
-            $data{'Buffers'},
-            $data{'MemFree'},
+            $data{'MemAvailable'},
         )
     );
 } else {
